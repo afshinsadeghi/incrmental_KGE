@@ -20,32 +20,32 @@
 
 ## Setup for incremental training:
 
-#assume that data cleaning and dubplicates of entities and relations are done.
-# all the new triples have at least a head or a tail in the known trained entities.
+assume that data cleaning and dubplicates of entities and relations are done.
+all the new triples have at least a head or a tail in the known trained entities.
 
 
-#for the first run:
-#just train on the first coming set.
-#save the trained model
+for the first run:
+just train on the first coming set.
+save the trained model
 
-#to make it you can just run for 5 epochs.
+to make it you can just run for few epochs.
 
-#incremental training iteration:
-# load the saved model with its data put it in m1
-# new data in new data folder arrives-> generate graph features and dictionary files entities.dic relations.dic 
-#the names of coming files will be like train1.txt train2.txt etc
-# read the new data:
-# load them seperatedyly or putting them in one bigger train.txt file?
-# in this step entity matching must be done, if they are same dedblicate and label the new ones with old ones.
-#then make a larger dataset, still, only train on newly come entities? or their beghbours too? or all the network? 
-#research question: 
-# to what level of neighbours entites must be train?
-# can these subgraphs be trained seperatedly? 
+incremental training iteration:
+ load the saved model with its data put it in m1
+ new data in new data folder arrives-> generate graph features and dictionary files entities.dic relations.dic 
+ the names of coming files will be like train1.txt train2.txt etc
+ read the new data:
+ load them seperatedyly or putting them in one bigger train.txt file?
+ in this step entity matching must be done, if they are same dedblicate and label the new ones with old ones.
+ then make a larger dataset, still, only train on newly come entities? or their beghbours too? or all the network? 
+ research question: 
+ to what level of neighbours entites must be train?
+ can these subgraphs be trained seperatedly? 
 
-# make a new model name it m2 with size of m1 plus new entities in m2
-# copy m1 into m2
-# train on new triple t2 + triples of old dataset that have a common entity or relation with t2
-# save new model and aggregated triples.  
+ make a new model name it m2 with size of m1 plus new entities in m2
+ copy m1 into m2
+ train on new triple t2 + triples of old dataset that have a common entity or relation with t2
+ save new model and aggregated triples.  
 
 ### Dataset Generation for experimetns:
 for experiments: run create_inc_dataset.py that randomly select triples from train.txt and generates several incoming train files as train1.txt ,train2.txt , ...
@@ -54,7 +54,6 @@ to run: python  create_inc_dataset.py  -data_path data/WN18RR_inc -divisions 5
 ## GFA-NN model training example run:
 
 on WN18RR_INC
-
 
 
 1. extract features:
