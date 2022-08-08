@@ -226,9 +226,9 @@ class KGEModel(nn.Module):
         if self.model_name == 'MDE':    
             distances_h = self.lenghts[head_part]
             distances_t = self.lenghts[tail_part]
-        if self.args.cuda:
-            distances_h = distances_h.cuda()
-            distances_t = distances_t.cuda()
+            if self.args.cuda:
+                distances_h = distances_h.cuda()
+                distances_t = distances_t.cuda()
 
         if mode == 'single' and self.model_name != 'MDE':
             batch_size, negative_sample_size = sample.size(0), 1
