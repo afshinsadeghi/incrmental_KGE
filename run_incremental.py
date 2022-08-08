@@ -46,7 +46,13 @@ def parse_args(args=None):
     parser.add_argument('-data_path_train', '--data_path_train', default="data/WN18RR_inc/train1.txt", type=str)
     parser.add_argument('-data_path_entities', '--data_path_entities', default="data/WN18RR_inc/entity2id.txt", type=str)
     parser.add_argument('-data_path_rels', '--data_path_rels', default="data/WN18RR_inc/relation2id.txt", type=str)
-    
+    parser.add_argument('-train_strategy','--train_strategy', default=1, type=int,help='1: default all random')
+    # Strategies to select new triple classes:
+    # 1. New data and old data mixed randomly (train all data randomly and entirely without a strategy) 
+    # 2. Both the head and tail new triples first. Then half new data(only head or tail) then, then old data. 
+    # 3. only a head or a  tail new first, then both new data, then old data
+    # 4. New and half new entity triples first(mixed randomly). Then old data. Again new data
+
     parser.add_argument('--model', default='TransE', type=str)
     parser.add_argument('-de', '--double_entity_embedding', action='store_true')
     parser.add_argument('-dr', '--double_relation_embedding', action='store_true')
@@ -392,10 +398,28 @@ def main(args):
 
     inverse_dic_tirple_class = inc_p.get_inverse_class(triple_dic_class)
     print("num of class 0 triples:", len(inverse_dic_tirple_class[0])) #from old dataset
-    print("num of class 1 triples:",len(inverse_dic_tirple_class.get(1,[]))) # head or tail is in the old dataset
-    print("num of class 2 triples:",len(inverse_dic_tirple_class.get(2,[]))) # none of head or tails are in the old dataset
+    print("num of class 1 triples:", len(inverse_dic_tirple_class.get(1,[]))) # head or tail is in the old dataset
+    print("num of class 2 triples:", len(inverse_dic_tirple_class.get(2,[]))) # none of head or tails are in the old dataset
+    
+    if args.train_strategy == 2 or  args.train_strategy  == 3 or args.train_strategy == 4:
+        strategy_stage_list = {2:[2,1,0],3:[1,2,0],4:{5,0,5}}
+        # class 0 triples: from old dataset.
+        # class 1 triples: head or tail is in the old dataset
+        # class 2 triples: none of head or tails are in the old dataset
+        # 5 for class of triples means random mix of class 1 and 2 (their sum, the random mix is done in the iterator)
+        # for strategy 1 which is the random select of all, we use the default training. 
+        if args.train_strategy == 4:
+            sum_1_and_2 = inverse_dic_tirple_class.get(1,[]) 
+            sum_1_and_2.append(inverse_dic_tirple_class.get(2,[]) )
+            train_triples_0 = sum_1_and_2
+            train_triples_1 = inverse_dic_tirple_class.get(0,[]) 
+            train_triples_2 = sum_1_and_2
+        else:
+            strategy_stage_set_selection = strategy_stage_list[args.train_strategy]
+            train_triples_0 = inverse_dic_tirple_class.get(strategy_stage_set_selection[0],[])
+            train_triples_1 = inverse_dic_tirple_class.get(strategy_stage_set_selection[1],[])
+            train_triples_2 = inverse_dic_tirple_class.get(strategy_stage_set_selection[2],[])
         
-
     nentity = len(entity2id)
     nrelation = len(relation2id)
 
@@ -458,23 +482,84 @@ def main(args):
 
     if args.do_train:
         # Set training dataloader iterator
-        train_dataloader_head = DataLoader(
-            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch'),
-            batch_size=args.batch_size,
-            shuffle=True,
-            num_workers=max(1, args.cpu_num // 2),
-            collate_fn=TrainDataset.collate_fn
-        )
 
-        train_dataloader_tail = DataLoader(
-            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
-            batch_size=args.batch_size,
-            shuffle=True,
-            num_workers=max(1, args.cpu_num // 2),
-            collate_fn=TrainDataset.collate_fn
-        )
+        if args.train_strategy ==1:
+            train_dataloader_head = DataLoader(
+                TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch'),
+                batch_size=args.batch_size,
+                shuffle=True,
+                num_workers=max(1, args.cpu_num // 2),
+                collate_fn=TrainDataset.collate_fn
+            )
 
-        train_iterator = BidirectionalOneShotIterator(train_dataloader_head, train_dataloader_tail)
+            train_dataloader_tail = DataLoader(
+                TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
+                batch_size=args.batch_size,
+                shuffle=True,
+                num_workers=max(1, args.cpu_num // 2),
+                collate_fn=TrainDataset.collate_fn
+            )
+
+            train_iterator = BidirectionalOneShotIterator(train_dataloader_head, train_dataloader_tail)
+        elif args.train_strategy ==2 or args.train_strategy ==3 or args.train_strategy ==4:
+            train_iterator_set = []
+            
+            strategy_stage_set_selection = strategy_stage_list[args.train_strategy]
+            train_triples_0_index = strategy_stage_set_selection[0]
+            train_triples_1_index = strategy_stage_set_selection[1]
+            train_triples_2_index = strategy_stage_set_selection[2]
+            
+            train_dataloader_head0 = DataLoader(
+                TrainDataset(train_triples_0, nentity, nrelation, args.negative_sample_size, 'head-batch'),
+                batch_size=args.batch_size,
+                shuffle=True,
+                num_workers=max(1, args.cpu_num // 2),
+                collate_fn=TrainDataset.collate_fn
+            )
+
+            train_dataloader_tail0 = DataLoader(
+                TrainDataset(train_triples_0, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
+                batch_size=args.batch_size,
+                shuffle=True,
+                num_workers=max(1, args.cpu_num // 2),
+                collate_fn=TrainDataset.collate_fn
+            )
+            train_iterator0 = BidirectionalOneShotIterator(train_dataloader_head0, train_dataloader_tail0)
+            train_iterator_set.append(train_iterator0)
+
+            train_dataloader_head1 = DataLoader(
+                TrainDataset(train_triples_1, nentity, nrelation, args.negative_sample_size, 'head-batch'),
+                batch_size=args.batch_size,
+                shuffle=True,
+                num_workers=max(1, args.cpu_num // 2),
+                collate_fn=TrainDataset.collate_fn
+            )
+            train_dataloader_tail1 = DataLoader(
+                TrainDataset(train_triples_1, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
+                batch_size=args.batch_size,
+                shuffle=True,
+                num_workers=max(1, args.cpu_num // 2),
+                collate_fn=TrainDataset.collate_fn
+            )
+            train_iterator1 = BidirectionalOneShotIterator(train_dataloader_head1, train_dataloader_tail1)
+            train_iterator_set.append(train_iterator1)
+            
+            train_dataloader_head2 = DataLoader(
+                TrainDataset(train_triples_2, nentity, nrelation, args.negative_sample_size, 'head-batch'),
+                batch_size=args.batch_size,
+                shuffle=True,
+                num_workers=max(1, args.cpu_num // 2),
+                collate_fn=TrainDataset.collate_fn
+            )
+            train_dataloader_tail2 = DataLoader(
+                TrainDataset(train_triples_2, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
+                batch_size=args.batch_size,
+                shuffle=True,
+                num_workers=max(1, args.cpu_num // 2),
+                collate_fn=TrainDataset.collate_fn
+            )
+            train_iterator2 = BidirectionalOneShotIterator(train_dataloader_head2, train_dataloader_tail2)
+            train_iterator_set.append(train_iterator2)
 
         # Set training configuration
         current_learning_rate = args.learning_rate
@@ -531,11 +616,57 @@ def main(args):
         training_logs = []
 
         # Training Loop
-        for step in range(init_step, args.max_steps):
+        if args.train_strategy ==1:
+            for step in range(init_step, args.max_steps):
 
-            log = kge_model.train_step(kge_model, optimizer, train_iterator, args)
+                log = kge_model.train_step(kge_model, optimizer, train_iterator, args)
 
-            training_logs.append(log)
+                training_logs.append(log)
+
+                if step >= warm_up_steps:
+                    current_learning_rate = current_learning_rate / 10
+                    logging.info('Change learning_rate to %f at step %d' % (current_learning_rate, step))
+
+                    if args.use_adadelta_optim:
+                        optimizer = torch.optim.Adadelta(
+                            filter(lambda p: p.requires_grad, kge_model.parameters()),
+                            lr=current_learning_rate, weight_decay=1e-6
+                        )
+                    else:
+                        optimizer = torch.optim.Adam(
+                            filter(lambda p: p.requires_grad, kge_model.parameters()),
+                            lr=current_learning_rate
+                        )
+                    warm_up_steps = warm_up_steps * 3
+
+                if step % args.save_checkpoint_steps == 0:
+                    save_variable_list = {
+                        'step': step,
+                        'current_learning_rate': current_learning_rate,
+                        'warm_up_steps': warm_up_steps
+                    }
+                    save_model(kge_model, optimizer, save_variable_list, args)
+
+                if step % args.log_steps == 0:
+                    metrics = {}
+                    for metric in training_logs[0].keys():
+                        metrics[metric] = sum([log[metric] for log in training_logs]) / len(training_logs)
+                    log_metrics('Training average', step, metrics)
+                    training_logs = []
+
+                if args.do_test and step > 15000 and step % args.valid_steps == 0:
+                    logging.info('Evaluating on Test Dataset...')
+                    metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
+                    log_metrics('Test', step, metrics)
+        elif args.train_strategy ==2 or args.train_strategy ==3 or args.train_strategy ==4:
+            stage_counter = 1
+            print("stage ",str(stage_counter), " of training in 3 stage stategy number:",args.train_strategy)
+            one_thid = int(args.max_steps/3)
+            for step in range(init_step + (stage_counter -1) * one_thid,  init_step + stage_counter * one_thid):
+
+                log = kge_model.train_step(kge_model, optimizer, train_iterator_set[stage_counter], args)
+
+                training_logs.append(log)
 
             if step >= warm_up_steps:
                 current_learning_rate = current_learning_rate / 10
@@ -567,12 +698,6 @@ def main(args):
                     metrics[metric] = sum([log[metric] for log in training_logs]) / len(training_logs)
                 log_metrics('Training average', step, metrics)
                 training_logs = []
-
-            if args.do_test and step > 15000 and step % args.valid_steps == 0:
-                logging.info('Evaluating on Test Dataset...')
-                metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
-                log_metrics('Test', step, metrics)
-
         save_variable_list = {
             'step': step,
             'current_learning_rate': current_learning_rate,
@@ -598,4 +723,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(parse_args())
-
