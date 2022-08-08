@@ -1,6 +1,6 @@
-# GFA-NN
-## Embedding Knowledge Graphs Attentive to Positional and Centrality Qualities
+# GFA-NN_Inc
 
+## Incremental training for Dynamic Knowledge Graphs Embedding
 
 ### Setup
 
