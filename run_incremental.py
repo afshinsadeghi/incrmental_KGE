@@ -44,6 +44,7 @@ def parse_args(args=None):
     parser.add_argument('--adding_data', action='store_true', help='declaring that the training dataset is added and is not the first one')
     
     parser.add_argument('-data_path_train', '--data_path_train', default="data/WN18RR_inc/train1.txt", type=str)
+    parser.add_argument('-data_path_old_train', '--data_path_old_train', default="", type=str)
     parser.add_argument('-data_path_entities', '--data_path_entities', default="data/WN18RR_inc/entity2id.txt", type=str)
     parser.add_argument('-data_path_rels', '--data_path_rels', default="data/WN18RR_inc/relation2id.txt", type=str)
     parser.add_argument('-train_strategy','--train_strategy', default=1, type=int,help='1: default all random')
@@ -402,6 +403,8 @@ def main(args):
     print("num of class 2 triples:", len(inverse_dic_tirple_class.get(2,[]))) # none of head or tails are in the old dataset
     
     if args.train_strategy == 2 or  args.train_strategy  == 3 or args.train_strategy == 4:
+
+        old_triples = read_triple(args.data_path_old_train, entity2id, relation2id)
         strategy_stage_list = {2:[2,1,0],3:[1,2,0],4:{5,0,5}}
         # class 0 triples: from old dataset.
         # class 1 triples: head or tail is in the old dataset
@@ -412,13 +415,14 @@ def main(args):
             sum_1_and_2 = inverse_dic_tirple_class.get(1,[]) 
             sum_1_and_2.append(inverse_dic_tirple_class.get(2,[]) )
             train_triples_0 = sum_1_and_2
-            train_triples_1 = inverse_dic_tirple_class.get(0,[]) 
+            train_triples_1 = inverse_dic_tirple_class.get(0,[])  +  old_triples 
             train_triples_2 = sum_1_and_2
         else:
             strategy_stage_set_selection = strategy_stage_list[args.train_strategy]
-            train_triples_0 = inverse_dic_tirple_class.get(strategy_stage_set_selection[0],[])
+            train_triples_0 = inverse_dic_tirple_class.get(strategy_stage_set_selection[0],[]) +  old_triples 
             train_triples_1 = inverse_dic_tirple_class.get(strategy_stage_set_selection[1],[])
             train_triples_2 = inverse_dic_tirple_class.get(strategy_stage_set_selection[2],[])
+            
         
     nentity = len(entity2id)
     nrelation = len(relation2id)
@@ -505,9 +509,9 @@ def main(args):
             train_iterator_set = []
             
             strategy_stage_set_selection = strategy_stage_list[args.train_strategy]
-            train_triples_0_index = strategy_stage_set_selection[0]
-            train_triples_1_index = strategy_stage_set_selection[1]
-            train_triples_2_index = strategy_stage_set_selection[2]
+            #train_triples_0_index = strategy_stage_set_selection[0]
+            #train_triples_1_index = strategy_stage_set_selection[1]
+            #train_triples_2_index = strategy_stage_set_selection[2]
             
             train_dataloader_head0 = DataLoader(
                 TrainDataset(train_triples_0, nentity, nrelation, args.negative_sample_size, 'head-batch'),
@@ -526,40 +530,40 @@ def main(args):
             )
             train_iterator0 = BidirectionalOneShotIterator(train_dataloader_head0, train_dataloader_tail0)
             train_iterator_set.append(train_iterator0)
-
-            train_dataloader_head1 = DataLoader(
-                TrainDataset(train_triples_1, nentity, nrelation, args.negative_sample_size, 'head-batch'),
-                batch_size=args.batch_size,
-                shuffle=True,
-                num_workers=max(1, args.cpu_num // 2),
-                collate_fn=TrainDataset.collate_fn
-            )
-            train_dataloader_tail1 = DataLoader(
-                TrainDataset(train_triples_1, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
-                batch_size=args.batch_size,
-                shuffle=True,
-                num_workers=max(1, args.cpu_num // 2),
-                collate_fn=TrainDataset.collate_fn
-            )
-            train_iterator1 = BidirectionalOneShotIterator(train_dataloader_head1, train_dataloader_tail1)
-            train_iterator_set.append(train_iterator1)
-            
-            train_dataloader_head2 = DataLoader(
-                TrainDataset(train_triples_2, nentity, nrelation, args.negative_sample_size, 'head-batch'),
-                batch_size=args.batch_size,
-                shuffle=True,
-                num_workers=max(1, args.cpu_num // 2),
-                collate_fn=TrainDataset.collate_fn
-            )
-            train_dataloader_tail2 = DataLoader(
-                TrainDataset(train_triples_2, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
-                batch_size=args.batch_size,
-                shuffle=True,
-                num_workers=max(1, args.cpu_num // 2),
-                collate_fn=TrainDataset.collate_fn
-            )
-            train_iterator2 = BidirectionalOneShotIterator(train_dataloader_head2, train_dataloader_tail2)
-            train_iterator_set.append(train_iterator2)
+            if (len(train_triples_1)> 0):
+                train_dataloader_head1 = DataLoader(
+                    TrainDataset(train_triples_1, nentity, nrelation, args.negative_sample_size, 'head-batch'),
+                    batch_size=args.batch_size,
+                    shuffle=True,
+                    num_workers=max(1, args.cpu_num // 2),
+                    collate_fn=TrainDataset.collate_fn
+                )
+                train_dataloader_tail1 = DataLoader(
+                    TrainDataset(train_triples_1, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
+                    batch_size=args.batch_size,
+                    shuffle=True,
+                    num_workers=max(1, args.cpu_num // 2),
+                    collate_fn=TrainDataset.collate_fn
+                )
+                train_iterator1 = BidirectionalOneShotIterator(train_dataloader_head1, train_dataloader_tail1)
+                train_iterator_set.append(train_iterator1)
+            if (len(train_triples_2)> 0):
+                train_dataloader_head2 = DataLoader(
+                    TrainDataset(train_triples_2, nentity, nrelation, args.negative_sample_size, 'head-batch'),
+                    batch_size=args.batch_size,
+                    shuffle=True,
+                    num_workers=max(1, args.cpu_num // 2),
+                    collate_fn=TrainDataset.collate_fn
+                )
+                train_dataloader_tail2 = DataLoader(
+                    TrainDataset(train_triples_2, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
+                    batch_size=args.batch_size,
+                    shuffle=True,
+                    num_workers=max(1, args.cpu_num // 2),
+                    collate_fn=TrainDataset.collate_fn
+                )
+                train_iterator2 = BidirectionalOneShotIterator(train_dataloader_head2, train_dataloader_tail2)
+                train_iterator_set.append(train_iterator2)
 
         # Set training configuration
         current_learning_rate = args.learning_rate
