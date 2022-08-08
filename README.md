@@ -89,6 +89,7 @@ class 2 triples: none of head or tails are in the old dataset
 run with --init_checkpoint and --train_strategy to load the saved model and load new train_file:
 --init_checkpoint loads the saved model from last stage. Needs to path of the saved model to be given.
 --train_strategy sets the strategy to condiser different triple classes.
+-data_path_old_train ./data/WN18RR_inc/train1.txt  is the agregated dataset including training samples in older round of training.
 
 Strategies to select new triple classes:
 1. New data and old data mixed randomly (train all data randomly and entirely without a strategy) 
@@ -99,7 +100,7 @@ Strategies to select new triple classes:
 training on train2.txt :
 
 ```
-python run_incremental.py  --train_strategy 2 --init_checkpoint ./experiments/kge_baselines_wn18rr_inc  --do_train --do_test -save ./experiments/kge_baselines_wn18rr_inc --data_path ./data/WN18RR_inc --data_path_train ./data/WN18RR_inc/train2.txt  --model MDE  -n 500 -b 1000 -d 200 -g 4.0 -a 2.5 -adv -lr .0005 --max_steps 3000 --test_batch_size 2 --valid_steps 3000 --log_steps 3000 --do_valid  -node_feat_path ./data/WN18RR_inc/train_node_features --cuda -psi 14.0
+python run_incremental.py  --train_strategy 2 --init_checkpoint ./experiments/kge_baselines_wn18rr_inc  --do_train --do_test -save ./experiments/kge_baselines_wn18rr_inc --data_path ./data/WN18RR_inc --data_path_train ./data/WN18RR_inc/train2.txt -data_path_old_train ./data/WN18RR_inc/train1.txt --model MDE  -n 500 -b 1000 -d 200 -g 4.0 -a 2.5 -adv -lr .0005 --max_steps 3000 --test_batch_size 2 --valid_steps 3000 --log_steps 3000 --do_valid  -node_feat_path ./data/WN18RR_inc/train_node_features --cuda -psi 14.0
 ```
  
 
