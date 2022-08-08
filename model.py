@@ -52,7 +52,7 @@ class KGEModel(nn.Module):
         self.entity_dim = hidden_dim * 2 if double_entity_embedding else hidden_dim
         self.relation_dim = hidden_dim * 2 if double_relation_embedding else hidden_dim
 
-        if model_name == 'Rotate':
+        if model_name == 'RotatE':
             self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
             nn.init.uniform_(
                 tensor=self.entity_embedding,
@@ -223,8 +223,9 @@ class KGEModel(nn.Module):
             head_part, tail_part = sample
             head_part = head_part[:, 0]
             tail_part = tail_part.view(-1)
-        distances_h = self.lenghts[head_part]
-        distances_t = self.lenghts[tail_part]
+        if self.model_name == 'MDE':    
+            distances_h = self.lenghts[head_part]
+            distances_t = self.lenghts[tail_part]
         if self.args.cuda:
             distances_h = distances_h.cuda()
             distances_t = distances_t.cuda()

@@ -134,12 +134,92 @@ def save_model(model, optimizer, save_variable_list, args):
         'optimizer_state_dict': optimizer.state_dict()},
         os.path.join(args.save_path, 'checkpoint')
     )
-    if args.model == 'MDE':
-        entity_embedding = model.entity_embedding0.detach().cpu().numpy()
-        np.save(
-            os.path.join(args.save_path, 'entity_embedding0'),
-            entity_embedding
-        )
+    # if args.model == 'MDE':
+    #     entity_embedding = model.entity_embedding0.detach().cpu().numpy()
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding0'),
+    #         entity_embedding
+    #     )
+    #     entity_embedding1 = model.entity_embedding1.detach().cpu().numpy()
+    #     entity_embedding2 = model.entity_embedding2.detach().cpu().numpy()
+    #     entity_embedding3 = model.entity_embedding3.detach().cpu().numpy()
+    #     entity_embedding4 = model.entity_embedding4.detach().cpu().numpy()
+    #     entity_embedding5 = model.entity_embedding5.detach().cpu().numpy()
+    #     entity_embedding6 = model.entity_embedding6.detach().cpu().numpy()
+    #     entity_embedding7 = model.entity_embedding7.detach().cpu().numpy()
+    #     entity_embedding8 = model.entity_embedding8.detach().cpu().numpy()
+    #     entity_embedding9 = model.entity_embedding9.detach().cpu().numpy()
+    #     entity_embedding10 = model.entity_embedding10.detach().cpu().numpy()
+    #     entity_embedding11 = model.entity_embedding11.detach().cpu().numpy()
+    #     entity_embedding12 = model.entity_embedding12.detach().cpu().numpy()
+        
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding1'),
+    #         entity_embedding1
+    #     )
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding2'),
+    #         entity_embedding2
+    #     )
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding3'),
+    #         entity_embedding3
+    #     )
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding4'),
+    #         entity_embedding4
+    #     )
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding5'),
+    #         entity_embedding5
+    #     )
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding6'),
+    #         entity_embedding6
+    #     )
+
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding7'),
+    #         entity_embedding7
+    #     )
+
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding8'),
+    #         entity_embedding8
+    #     )
+
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding9'),
+    #         entity_embedding9
+    #     )
+
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding10'),
+    #         entity_embedding10
+    #     )
+
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding11'),
+    #         entity_embedding11
+    #     )
+
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding12'),
+    #         entity_embedding12
+    #     )
+
+
+    # else:
+    #     entity_embedding = model.entity_embedding.detach().cpu().numpy()
+    #     np.save(
+    #         os.path.join(args.save_path, 'entity_embedding'),
+    #         entity_embedding
+    #     )
+    #     relation_embedding = model.relation_embedding.detach().cpu().numpy()
+    #     np.save(
+    #         os.path.join(args.save_path, 'relation_embedding'),
+    #         relation_embedding
+    #     )
 
 
 def read_triple(file_path, entity2id, relation2id):
@@ -349,8 +429,8 @@ def main(args):
     test_triples = read_triple(os.path.join(args.data_path, 'test.txt'), entity2id, relation2id)
     logging.info('#test: %d' % len(test_triples))
 
-    
-    node_features = get_node_features(args, entity2id)
+    if args.model == 'MDE':
+        node_features = get_node_features(args, entity2id)
 
     all_true_triples = train_triples + valid_triples + test_triples
 
@@ -371,7 +451,10 @@ def main(args):
     for name, param in kge_model.named_parameters():
         logging.info('Parameter %s: %s, require_grad = %s' % (name, str(param.size()), str(param.requires_grad)))
 
-    kge_model.set_node_features(args, node_features)
+    if args.model == 'MDE':
+        kge_model.set_node_features(args, node_features)
+    else:
+        kge_model.args = args
 
     if args.do_train:
         # Set training dataloader iterator
