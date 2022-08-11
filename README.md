@@ -31,20 +31,24 @@ to make it you can just run for few epochs.
 incremental training iteration:
  load the saved model with its data put it in m1
  new data in new data folder arrives-> generate graph features and dictionary files entities.dic relations.dic 
+ reading the new data:
  the names of coming files will be like train1.txt train2.txt etc
- read the new data:
- load them seperatedyly or putting them in one bigger train.txt file?
- in this step entity matching must be done, if they are same dedblicate and label the new ones with old ones.
-then make a larger dataset, still, only train on newly come entities? or their beghbours too? or all the network? 
+ when training the incoming new data in train2.txt, all the previous data should be included and agregated in train1.txt
+ this two files are added to the second and next rounds of the incremental training.
+
+In this step entity matching must be done (It is not a part of the model script ), if they are same dedblicate and label the new ones with old ones.
+
+then make a larger dataset, the trainer makes a new model name it m2 with size of m1 plus new entities in m2
+copies m1 into m2
+trains on new triple t2 + triples of old dataset. different strategies consider the triples with a common entity or relation with t1 differently
+after the training ,it saves new model.
+We then should aggregate triples.(It is not a part of the model script)  
+
 
 Research question: 
  to what level of neighbours entites must be train?
  can these subgraphs be trained seperatedly? 
-
- make a new model name it m2 with size of m1 plus new entities in m2
- copy m1 into m2
- train on new triple t2 + triples of old dataset that have a common entity or relation with t2
-save new model and aggregated triples.  
+ only train on newly come entities? or their beghbours too? or all the network?for that there is 4 strategies defined below. 
 
 ### Dataset Generation for experimetns:
 for experiments: run create_inc_dataset.py that randomly select triples from train.txt and generates several incoming train files as train1.txt ,train2.txt , ...
@@ -106,13 +110,12 @@ python run_incremental.py --adding_data --train_strategy 2 --init_checkpoint ./e
  
 
 ### FAQ 
-<strong>Q</strong>: How we reproduce the results of the model for the large dataset?
-
-<strong>A</strong>: Large datasets similar to biokg require a large number of iterations.  Since the learning rate reduces during the training we do not suggest setting max_steps to a larger number, instead, we suggest storing the trained model using -save and rerunning the training iteration several times. In our evaluation it executed the training 3 times for biokg. 
-
 
 <strong>Q</strong>: Is the model open for learning furthur features? 
 
 <strong>A</strong>: Yes, simply by adding another score and a set of embedding weights to it. Please do not forget to normalize the graph features before learning them.
 
+<strong>Q</strong>: Does the model include dat processing steps like deduplication and aggregation of entties and triples?
+
+<strong>A</strong>: Data processing tasks like deduplication of entities in entity2id.txt and triples, also the aggregation of learnt triples to old train triples for the incremental iteration is to not included in the embedding model.  
 
