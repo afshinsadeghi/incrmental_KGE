@@ -419,7 +419,7 @@ def main(args):
         # for strategy 1 which is the random select of all, we use the default training. 
         if args.train_strategy == 4:
             sum_1_and_2 = inverse_dic_tirple_class.get(1,[]) 
-            sum_1_and_2.append(inverse_dic_tirple_class.get(2,[]) )
+            sum_1_and_2.extend(inverse_dic_tirple_class.get(2,[]) )
             train_triples_0 = sum_1_and_2
             train_triples_1 = inverse_dic_tirple_class.get(0,[])  +  old_triples 
             train_triples_2 = sum_1_and_2
