@@ -1,5 +1,7 @@
-# GFA-NN
-## Embedding Knowledge Graphs Attentive to Positional and Centrality Qualities
+# GFA-NN Incremental
+## Incremental Embedding Knowledge Graphs 
+
+Addition to KG embedding Attentive to Positional and Centrality Qualities
 
 
 ### Setup
@@ -9,12 +11,7 @@
 ##### 2. Before executing the training, generate pre-preocessed files by
    running: ./extract_graph_features/process.sh
 
-##### 3. With the current limitation on GPU memories, we made a multi core
-   version (5 gpu cores) to allow running the model on the larger
-   dataset (for example biokg). This version of the model is in the
-   folder: ./5_gpu_version_of_model_for_large_datasets
-
-##### 4. Follow the training concept below and check paper Appendix for the best hyper-parameters.
+##### 3. Follow the training concept below and check paper Appendix for the best hyper-parameters.
 
 
 ### Describing incremental training:
@@ -31,7 +28,8 @@ to make it you can just run for few epochs.
 incremental training iteration:
  load the saved model with its data put it in m1
  new data in new data folder arrives-> generate graph features and dictionary files entities.dic relations.dic 
- reading the new data:
+ the names of coming files will be like train1.txt train2.txt etc
+reading the new data:
  the names of coming files will be like train1.txt train2.txt etc
  when training the incoming new data in train2.txt, all the previous data should be included and agregated in train1.txt
  this two files are added to the second and next rounds of the incremental training.
@@ -49,6 +47,8 @@ Research question:
  to what level of neighbours entites must be train?
  can these subgraphs be trained seperatedly? 
  only train on newly come entities? or their beghbours too? or all the network?for that there is 4 strategies defined below. 
+
+
 
 ### Dataset Generation for experimetns:
 for experiments: run create_inc_dataset.py that randomly select triples from train.txt and generates several incoming train files as train1.txt ,train2.txt , ...
@@ -94,7 +94,6 @@ run with --init_checkpoint and --train_strategy to load the saved model and load
 --init_checkpoint loads the saved model from last stage. Needs to path of the saved model to be given.
 --train_strategy sets the strategy to condiser different triple classes.
 -data_path_old_train ./data/WN18RR_inc/train1.txt  is the agregated dataset including training samples in older round of training.
---adding_data  lets the program know to load the older triples in addition to new triples dataset
 
 Strategies to select new triple classes:
 1. New data and old data mixed randomly (train all data randomly and entirely without a strategy) 
@@ -105,17 +104,16 @@ Strategies to select new triple classes:
 training on train2.txt :
 
 ```
-python run_incremental.py --adding_data --train_strategy 2 --init_checkpoint ./experiments/kge_baselines_wn18rr_inc  --do_train --do_test -save ./experiments/kge_baselines_wn18rr_inc --data_path ./data/WN18RR_inc --data_path_train ./data/WN18RR_inc/train2.txt -data_path_old_train ./data/WN18RR_inc/train1.txt --model MDE  -n 500 -b 1000 -d 200 -g 4.0 -a 2.5 -adv -lr .0005 --max_steps 3000 --test_batch_size 2 --valid_steps 3000 --log_steps 3000 --do_valid  -node_feat_path ./data/WN18RR_inc/train_node_features --cuda -psi 14.0
+python run_incremental.py  --train_strategy 2 --init_checkpoint ./experiments/kge_baselines_wn18rr_inc  --do_train --do_test -save ./experiments/kge_baselines_wn18rr_inc --data_path ./data/WN18RR_inc --data_path_train ./data/WN18RR_inc/train2.txt -data_path_old_train ./data/WN18RR_inc/train1.txt --model MDE  -n 500 -b 1000 -d 200 -g 4.0 -a 2.5 -adv -lr .0005 --max_steps 3000 --test_batch_size 2 --valid_steps 3000 --log_steps 3000 --do_valid  -node_feat_path ./data/WN18RR_inc/train_node_features --cuda -psi 14.0
 ```
  
 
 ### FAQ 
-
 <strong>Q</strong>: Is the model open for learning furthur features? 
 
 <strong>A</strong>: Yes, simply by adding another score and a set of embedding weights to it. Please do not forget to normalize the graph features before learning them.
 
 <strong>Q</strong>: Does the model include dat processing steps like deduplication and aggregation of entties and triples?
 
-<strong>A</strong>: Data processing tasks like deduplication of entities in entity2id.txt and triples, also the aggregation of learnt triples to old train triples for the incremental iteration is to not included in the embedding model.  
+<strong>A</strong>: Data processing tasks like deduplication of entities in entity2id.txt and triples, also the aggregation of learnt triples to old train triples for the incremental iteration is to not included in the embedding model.
 
