@@ -387,15 +387,21 @@ def main(args):
         train_triples, entity2id, relation2id = inc_p.read_new_entities_mapped(args)
         
         triple_dic_class, triple_dic, triple_dic_t, dic_e ,dic_r = inc_p.estimate_triples_class_old(train_triples)
-        np.save(os.path.join(args.data_path, 'last_train_raw'),[train_triples, entity2id, relation2id])
-        np.save(os.path.join(args.data_path, 'last_train_triple_class'),[triple_dic_class, triple_dic, triple_dic_t, dic_e ,dic_r])
+        #np.save(os.path.join(args.data_path, 'last_train_raw'),[train_triples, entity2id, relation2id])
+        #np.save(os.path.join(args.data_path, 'last_train_triple_class'),[triple_dic_class, triple_dic, triple_dic_t, dic_e ,dic_r])
     else:
-        [train_triples0, entity2id0, relation2id0] = np.load(os.path.join(args.data_path, 'last_train_raw'))
-        [triple_dic_class0, triple_dic0, triple_dic_t0, dic_e0 ,dic_r0] = np.load(os.path.join(args.data_path, 'last_train_triple_class'))
-        train_triples, entity2id, relation2id = inc_p.read_new_entities(args, entity2id0, relation2id0,train_triples0)
+        #[train_triples0, entity2id0, relation2id0] = np.load(os.path.join(args.data_path, 'last_train_raw'))
+        #[triple_dic_class0, triple_dic0, triple_dic_t0, dic_e0 ,dic_r0] = np.load(os.path.join(args.data_path, 'last_train_triple_class'))
+        import copy
+        args2 = copy.deepcopy(args)
+        args2.data_path_train = args2.data_path_old_train
+        train_triples0, entity2id0, relation2id0 = inc_p.read_new_entities_mapped(args2)
+        triple_dic_class0, triple_dic0, triple_dic_t0, dic_e0 ,dic_r0 = inc_p.estimate_triples_class_old(train_triples0)
+        #
+        train_triples, entity2id, relation2id = inc_p.read_new_entities_mapped(args, entity2id0, relation2id0,train_triples0)
         triple_dic_class, triple_dic, triple_dic_t, dic_e ,dic_r = inc_p.estimate_triples_class(train_triples,triple_dic_class0, triple_dic0, triple_dic_t0, dic_e0 ,dic_r0)
-        np.save(os.path.join(args.data_path, 'last_train_raw'),[train_triples, entity2id, relation2id])
-        np.save(os.path.join(args.data_path, 'last_train_triple_class'),[triple_dic_class, triple_dic, triple_dic_t, dic_e ,dic_r])
+        #np.save(os.path.join(args.data_path, 'last_train_raw'),[train_triples, entity2id, relation2id])
+        #np.save(os.path.join(args.data_path, 'last_train_triple_class'),[triple_dic_class, triple_dic, triple_dic_t, dic_e ,dic_r])
 
     inverse_dic_tirple_class = inc_p.get_inverse_class(triple_dic_class)
     print("num of class 0 triples:", len(inverse_dic_tirple_class[0])) #from old dataset
