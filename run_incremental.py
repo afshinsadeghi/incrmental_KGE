@@ -627,6 +627,10 @@ def main(args):
 
         # Training Loop
         if args.train_strategy ==1:
+            if args.adding_data:
+                args.max_steps = init_step + args.max_steps 
+            print("training in the 1 stage strategy number:",args.train_strategy, "running step ", init_step , "to step " ,   args.max_steps)
+
             for step in range(init_step, args.max_steps):
 
                 log = kge_model.train_step(kge_model, optimizer, train_iterator, args)
@@ -672,7 +676,7 @@ def main(args):
             stage_counter = 1
             one_thid = int(args.max_steps/3)
             for stage_counter in range(1,4):
-                print("stage ",str(stage_counter), " of training in 3 stage stategy number:",args.train_strategy, "running step ", init_step + (stage_counter -1) * one_thid, "to step " ,  init_step + stage_counter * one_thid)
+                print("stage ",str(stage_counter), " of training in 3 stage strategy number:",args.train_strategy, "running step ", init_step + (stage_counter -1) * one_thid, "to step " ,  init_step + stage_counter * one_thid)
                 for step in range(init_step + (stage_counter -1) * one_thid,  init_step + stage_counter * one_thid):
 
                     log = kge_model.train_step(kge_model, optimizer, train_iterator_set[stage_counter -1], args)
