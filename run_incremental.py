@@ -570,7 +570,7 @@ def main(args):
                 )
                 train_iterator2 = BidirectionalOneShotIterator(train_dataloader_head2, train_dataloader_tail2)
                 train_iterator_set.append(train_iterator2)
-
+        
         # Set training configuration
         current_learning_rate = args.learning_rate
         if args.use_adadelta_optim:
@@ -670,44 +670,56 @@ def main(args):
                     log_metrics('Test', step, metrics)
         elif args.train_strategy ==2 or args.train_strategy ==3 or args.train_strategy ==4:
             stage_counter = 1
-            print("stage ",str(stage_counter), " of training in 3 stage stategy number:",args.train_strategy)
             one_thid = int(args.max_steps/3)
-            for step in range(init_step + (stage_counter -1) * one_thid,  init_step + stage_counter * one_thid):
+            for stage_counter in range(1,4):
+                print("stage ",str(stage_counter), " of training in 3 stage stategy number:",args.train_strategy, "running step ", init_step + (stage_counter -1) * one_thid, "to step " ,  init_step + stage_counter * one_thid)
+                for step in range(init_step + (stage_counter -1) * one_thid,  init_step + stage_counter * one_thid):
 
-                log = kge_model.train_step(kge_model, optimizer, train_iterator_set[stage_counter], args)
+                    log = kge_model.train_step(kge_model, optimizer, train_iterator_set[stage_counter -1], args)
 
-                training_logs.append(log)
+                    training_logs.append(log)
 
-            if step >= warm_up_steps:
-                current_learning_rate = current_learning_rate / 10
-                logging.info('Change learning_rate to %f at step %d' % (current_learning_rate, step))
+                if step >= warm_up_steps:
+                    current_learning_rate = current_learning_rate / 10
+                    logging.info('Change learning_rate to %f at step %d' % (current_learning_rate, step))
 
-                if args.use_adadelta_optim:
-                    optimizer = torch.optim.Adadelta(
-                        filter(lambda p: p.requires_grad, kge_model.parameters()),
-                        lr=current_learning_rate, weight_decay=1e-6
-                    )
-                else:
-                    optimizer = torch.optim.Adam(
-                        filter(lambda p: p.requires_grad, kge_model.parameters()),
-                        lr=current_learning_rate
-                    )
-                warm_up_steps = warm_up_steps * 3
+                    if args.use_adadelta_optim:
+                        optimizer = torch.optim.Adadelta(
+                            filter(lambda p: p.requires_grad, kge_model.parameters()),
+                            lr=current_learning_rate, weight_decay=1e-6
+                        )
+                    else:
+                        optimizer = torch.optim.Adam(
+                            filter(lambda p: p.requires_grad, kge_model.parameters()),
+                            lr=current_learning_rate
+                        )
+                    warm_up_steps = warm_up_steps * 3
 
-            if step % args.save_checkpoint_steps == 0:
-                save_variable_list = {
-                    'step': step,
-                    'current_learning_rate': current_learning_rate,
-                    'warm_up_steps': warm_up_steps
-                }
-                save_model(kge_model, optimizer, save_variable_list, args)
+                    if step % args.save_checkpoint_steps == 0:
+                        save_variable_list = {
+                            'step': step,
+                            'current_learning_rate': current_learning_rate,
+                            'warm_up_steps': warm_up_steps
+                        }
+                        save_model(kge_model, optimizer, save_variable_list, args)
 
-            if step % args.log_steps == 0:
-                metrics = {}
-                for metric in training_logs[0].keys():
-                    metrics[metric] = sum([log[metric] for log in training_logs]) / len(training_logs)
-                log_metrics('Training average', step, metrics)
-                training_logs = []
+                    if step % args.log_steps == 0:
+                        metrics = {}
+                        for metric in training_logs[0].keys():
+                            metrics[metric] = sum([log[metric] for log in training_logs]) / len(training_logs)
+                        log_metrics('Training average', step, metrics)
+                        training_logs = []
+                    if step % args.log_steps == 0:
+                        metrics = {}
+                        for metric in training_logs[0].keys():
+                            metrics[metric] = sum([log[metric] for log in training_logs]) / len(training_logs)
+                        log_metrics('Training average', step, metrics)
+                        training_logs = []
+
+                    if args.do_test and step > 15000 and step % args.valid_steps == 0:
+                        logging.info('Evaluating on Test Dataset...')
+                        metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
+                        log_metrics('Test', step, metrics)
         save_variable_list = {
             'step': step,
             'current_learning_rate': current_learning_rate,
