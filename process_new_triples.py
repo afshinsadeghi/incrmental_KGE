@@ -1,6 +1,6 @@
 import os 
 import argparse
-
+import numpy as np
 
 
 def parse_args_process(args=None):
@@ -189,11 +189,13 @@ def get_inverse_class(triple_dic_class3):
             inverse_dic_tirple_class[class_] = [triple]
     return inverse_dic_tirple_class
 
-#this test run reads triples from "data/WN18RR_inc/train1.txt" as first coming data, process it, then takes "data/WN18RR_inc/train2.txt" and  updates triple set and classes
+
+# this test run reads triples from "data/WN18RR_inc/train1.txt" as first coming data, process it, then takes "data/WN18RR_inc/train2.txt" and  updates triple set and classes
 def test_run_process_new_triples():
 
     args = parse_args_process()
     triples, entity2id_mapped, rel2id_mapped = read_new_entities(args)
+    #print(triples)
     print(len(triples),len(entity2id_mapped), len(rel2id_mapped))
 
     triple_dic_class, triple_dic, triple_dic_t, dic_e ,dic_r = estimate_triples_class_old(triples)
@@ -206,7 +208,7 @@ def test_run_process_new_triples():
     args.data_path_train = "data/WN18RR_inc/train2.txt"
     triples2, entity2id_mapped2, rel2id_mapped2 = read_new_entities(args, entity2id_mapped, rel2id_mapped,triples)
     print(len(triples2),len(entity2id_mapped2), len(rel2id_mapped2))
-
+    #print(triples2)
     triple_dic_class2, triple_dic2, triple_dic_t2, dic_e2 ,dic_r2 = estimate_triples_class(triples2,triple_dic_class, triple_dic, triple_dic_t, dic_e ,dic_r)
 
     print(len(triple_dic_class2),len(triple_dic2), len(triple_dic_t2),len(dic_e2))
@@ -229,3 +231,36 @@ def test_run_process_new_triples():
     print("num of class 2 triples:",len(inverse_dic_tirple_class[2])) # none of head or tails are in the old dataset
 
 #test_run_process_new_triples()
+
+
+# makeing test file for incremental KGE 
+# this run reads triples from "data/WN18RR_inc/train2.txt" as first data, process it, then takes "data/WN18RR_inc/test.txt" and exlude triples from test that are not in train2.txt by only selecting class 0 from it and stores them in a new test2.txt file
+def make_test_file_for_incremental_train():
+    args = parse_args_process()
+    args.data_path_train = "data/WN18RR_inc/train2.txt"
+    triples, entity2id_mapped, rel2id_mapped = read_new_entities(args)
+    #print(triples)
+    print(len(triples),len(entity2id_mapped), len(rel2id_mapped))
+
+    triple_dic_class, triple_dic, triple_dic_t, dic_e ,dic_r = estimate_triples_class_old(triples)
+
+    print(len(triple_dic_class),len(triple_dic), len(triple_dic_t),len(dic_e))
+    
+    args.data_path_train = "data/WN18RR_inc/test_all.txt"
+    triples2, entity2id_mapped2, rel2id_mapped2 = read_new_entities(args, entity2id_mapped, rel2id_mapped,triples)
+    print(len(triples2),len(entity2id_mapped2), len(rel2id_mapped2))
+    #print(triples2)
+    triple_dic_class2, triple_dic2, triple_dic_t2, dic_e2 ,dic_r2 = estimate_triples_class(triples2,triple_dic_class, triple_dic, triple_dic_t, dic_e ,dic_r)
+    inverse_dic_tirple_class = get_inverse_class(triple_dic_class2)
+
+    #now here remove the train2-triples from the set.
+    final_test_set = []
+    included  = inverse_dic_tirple_class[0]
+    for triple in included:
+        if triple_dic_class.get(triple,None) is None:
+            final_test_set.append(triple)
+
+    print("a sample from the new test",final_test_set[0])
+    np.savetxt("data/WN18RR_inc/test2.txt", final_test_set,delimiter= "\t",fmt='%s' )
+
+# make_test_file_for_incremental_train()
