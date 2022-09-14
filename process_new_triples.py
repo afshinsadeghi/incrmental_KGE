@@ -261,6 +261,6 @@ def make_test_file_for_incremental_train():
             final_test_set.append(triple)
 
     print("a sample from the new test",final_test_set[0])
-    np.savetxt("data/WN18RR_inc/test2.txt", final_test_set,delimiter= "\t",fmt='%s' )
+    np.savetxt("data/WN18RR_inc/test.txt", final_test_set,delimiter= "\t",fmt='%s' )
 
-# make_test_file_for_incremental_train()
+#make_test_file_for_incremental_train()
