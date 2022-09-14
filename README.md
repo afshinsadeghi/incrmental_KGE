@@ -109,7 +109,10 @@ training on train2.txt :
 ```
 python run_incremental.py  --train_strategy 2 --init_checkpoint ./experiments/kge_baselines_wn18rr_inc  --do_train --do_test -save ./experiments/kge_baselines_wn18rr_inc --data_path ./data/WN18RR_inc --data_path_train ./data/WN18RR_inc/train2.txt -data_path_old_train ./data/WN18RR_inc/train1.txt --model MDE  -n 500 -b 1000 -d 200 -g 4.0 -a 2.5 -adv -lr .0005 --max_steps 3000 --test_batch_size 2 --valid_steps 3000 --log_steps 3000 --do_valid  -node_feat_path ./data/WN18RR_inc/train_node_features --cuda -psi 14.0
 ```
- 
+
+### folders:
+utils : includes the code to remove triples from the train file that filters entites that have a number of neighbours that are less than a threshod
+extract_graph_feature: includes files to generate global graph feautures used by the GFA-NN model. There is also a code that takes train.txt files and generate entity2id.txt and relation2id.txt index files.
 
 ### FAQ 
 <strong>Q</strong>: Is the model open for learning furthur features? 
