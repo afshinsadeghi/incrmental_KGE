@@ -470,7 +470,7 @@ def main(args):
 
     kge_model = KGEModel(
         model_name=args.model,
-        nentity=nentity,
+        nentity=nentity, #this is new size
         nrelation=nrelation,
         hidden_dim=args.hidden_dim,
         gamma=args.gamma,
@@ -592,9 +592,50 @@ def main(args):
     if args.init_checkpoint:
         # Restore model from checkpoint directory
         logging.info('Loading checkpoint %s...' % args.init_checkpoint)
+        
         checkpoint = torch.load(os.path.join(args.init_checkpoint, 'checkpoint'))
         init_step = checkpoint['step']
-        kge_model.load_state_dict(checkpoint['model_state_dict'])
+        old_dim = checkpoint['model_state_dict']['relation_embedding'].size(1)# if it want to double the dim for rotatE the base dim will based on relation
+        old_entity_dim = checkpoint['model_state_dict']['entity_embedding'].size(1)
+        nentity_old = checkpoint['model_state_dict']['entity_embedding'].size(0)
+        nrelation_old = checkpoint['model_state_dict']['relation_embedding'].size(0)
+
+        #if checkpoint['model_state_dict'] != args.model:
+        #    print('loaded model is different from current model')
+        kge_model_old = KGEModel(
+        model_name=args.model,
+        nentity=nentity_old,
+        nrelation=nrelation_old,
+        hidden_dim=old_dim,
+        gamma=args.gamma,
+        double_entity_embedding=args.double_entity_embedding,
+        double_relation_embedding=args.double_relation_embedding
+        ) 
+        kge_model_old.load_state_dict(checkpoint['model_state_dict'])
+        if args.model == "MDE": # this part of code reloads embedding from last training iteration, and allow increasing entity and relation number (in entity2id.txt and relation2id.txt) and their dimension in the new run
+            kge_model.entity_embedding0[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding0.data
+            kge_model.entity_embedding1[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding1.data
+            kge_model.entity_embedding3[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding3.data
+            kge_model.entity_embedding4[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding4.data
+            kge_model.entity_embedding5[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding5.data
+            kge_model.entity_embedding7[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding7.data
+            kge_model.entity_embedding8[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding8.data
+            kge_model.entity_embedding9[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding9.data
+            kge_model.entity_embedding10[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding10.data
+            kge_model.entity_embedding11[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding11.data
+            kge_model.entity_embedding12[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding12.data
+            kge_model.relation_embedding0[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding0.data
+            kge_model.relation_embedding1[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding1.data
+            kge_model.relation_embedding2[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding2.data
+            kge_model.relation_embedding3[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding3.data
+            kge_model.relation_embedding4[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding4.data
+            kge_model.relation_embedding5[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding5.data
+            kge_model.relation_embedding6[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding6.data
+        else:
+            kge_model.entity_embedding[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding.data
+            kge_model.relation_embedding[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding.data
+        del kge_model_old
+
         if args.do_train:
             current_learning_rate = checkpoint['current_learning_rate']
             warm_up_steps = checkpoint['warm_up_steps']
