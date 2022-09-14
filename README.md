@@ -73,12 +73,15 @@ python run_incremental.py  --do_train --do_test -save ./experiments/kge_baseline
 run on the second dataset:
 
 External step : data integration using entity matching and deduplicates: 
+this step includes this 3 updates
+-  increase in the number of entities in the entity2id.txt , the new entites are added to the old set, the index increases without gap.
+-  increase in the number of relations in the relation2id.txt
+-  a new train12.txt file that includes newly arrived triples. Possible entity matching happens in this step where entites in this file that are matched with first train.txt file get the same id.
 
-
-3. step extract features for new triples:
+3. Optional step extract features for new triples:
 ./extract_graph_features/process.sh
 
-4. 
+4. run the next iteration of training, base on a step of triple classification.
 
 Classify new triples by their new enities and run traing for the new triples:
 
