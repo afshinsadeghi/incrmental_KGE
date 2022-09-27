@@ -544,16 +544,16 @@ def main(args):
             kge_model.entity_embedding10[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding10.data
             kge_model.entity_embedding11[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding11.data
             kge_model.entity_embedding12[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding12.data
-            kge_model.relation_embedding0[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding0.data
-            kge_model.relation_embedding1[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding1.data
-            kge_model.relation_embedding2[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding2.data
-            kge_model.relation_embedding3[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding3.data
-            kge_model.relation_embedding4[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding4.data
-            kge_model.relation_embedding5[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding5.data
-            kge_model.relation_embedding6[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding6.data
+            kge_model.relation_embedding0[0:nrelation_old,0:old_dim].data = kge_model_old.relation_embedding0.data
+            kge_model.relation_embedding1[0:nrelation_old,0:old_dim].data = kge_model_old.relation_embedding1.data
+            kge_model.relation_embedding2[0:nrelation_old,0:old_dim].data = kge_model_old.relation_embedding2.data
+            kge_model.relation_embedding3[0:nrelation_old,0:old_dim].data = kge_model_old.relation_embedding3.data
+            kge_model.relation_embedding4[0:nrelation_old,0:old_dim].data = kge_model_old.relation_embedding4.data
+            kge_model.relation_embedding5[0:nrelation_old,0:old_dim].data = kge_model_old.relation_embedding5.data
+            kge_model.relation_embedding6[0:nrelation_old,0:old_dim].data = kge_model_old.relation_embedding6.data
         else:
             kge_model.entity_embedding[0:nentity_old,0:old_entity_dim].data = kge_model_old.entity_embedding.data
-            kge_model.relation_embedding[0:nrelation_old,0:old_dim].data = kge_model_old.entity_embedding.data
+            kge_model.relation_embedding[0:nrelation_old,0:old_dim].data = kge_model_old.relation_embedding.data
         del kge_model_old
 
         if args.do_train:
