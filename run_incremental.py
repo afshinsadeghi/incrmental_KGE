@@ -141,93 +141,7 @@ def save_model(model, optimizer, save_variable_list, args):
         'optimizer_state_dict': optimizer.state_dict()},
         os.path.join(args.save_path, 'checkpoint')
     )
-    # if args.model == 'MDE':
-    #     entity_embedding = model.entity_embedding0.detach().cpu().numpy()
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding0'),
-    #         entity_embedding
-    #     )
-    #     entity_embedding1 = model.entity_embedding1.detach().cpu().numpy()
-    #     entity_embedding2 = model.entity_embedding2.detach().cpu().numpy()
-    #     entity_embedding3 = model.entity_embedding3.detach().cpu().numpy()
-    #     entity_embedding4 = model.entity_embedding4.detach().cpu().numpy()
-    #     entity_embedding5 = model.entity_embedding5.detach().cpu().numpy()
-    #     entity_embedding6 = model.entity_embedding6.detach().cpu().numpy()
-    #     entity_embedding7 = model.entity_embedding7.detach().cpu().numpy()
-    #     entity_embedding8 = model.entity_embedding8.detach().cpu().numpy()
-    #     entity_embedding9 = model.entity_embedding9.detach().cpu().numpy()
-    #     entity_embedding10 = model.entity_embedding10.detach().cpu().numpy()
-    #     entity_embedding11 = model.entity_embedding11.detach().cpu().numpy()
-    #     entity_embedding12 = model.entity_embedding12.detach().cpu().numpy()
-        
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding1'),
-    #         entity_embedding1
-    #     )
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding2'),
-    #         entity_embedding2
-    #     )
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding3'),
-    #         entity_embedding3
-    #     )
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding4'),
-    #         entity_embedding4
-    #     )
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding5'),
-    #         entity_embedding5
-    #     )
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding6'),
-    #         entity_embedding6
-    #     )
-
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding7'),
-    #         entity_embedding7
-    #     )
-
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding8'),
-    #         entity_embedding8
-    #     )
-
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding9'),
-    #         entity_embedding9
-    #     )
-
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding10'),
-    #         entity_embedding10
-    #     )
-
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding11'),
-    #         entity_embedding11
-    #     )
-
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding12'),
-    #         entity_embedding12
-    #     )
-
-
-    # else:
-    #     entity_embedding = model.entity_embedding.detach().cpu().numpy()
-    #     np.save(
-    #         os.path.join(args.save_path, 'entity_embedding'),
-    #         entity_embedding
-    #     )
-    #     relation_embedding = model.relation_embedding.detach().cpu().numpy()
-    #     np.save(
-    #         os.path.join(args.save_path, 'relation_embedding'),
-    #         relation_embedding
-    #     )
-
+    
 
 def read_triple(file_path, entity2id, relation2id):
     '''
@@ -595,11 +509,17 @@ def main(args):
         
         checkpoint = torch.load(os.path.join(args.init_checkpoint, 'checkpoint'))
         init_step = checkpoint['step']
-        old_dim = checkpoint['model_state_dict']['relation_embedding'].size(1)# if it want to double the dim for rotatE the base dim will based on relation
-        old_entity_dim = checkpoint['model_state_dict']['entity_embedding'].size(1)
-        nentity_old = checkpoint['model_state_dict']['entity_embedding'].size(0)
-        nrelation_old = checkpoint['model_state_dict']['relation_embedding'].size(0)
-
+        if args.model == "MDE":
+            old_dim = checkpoint['model_state_dict']['relation_embedding0'].size(1)# if it want to double the dim for rotatE the base dim will based on relation
+            old_entity_dim = checkpoint['model_state_dict']['entity_embedding0'].size(1)
+            nentity_old = checkpoint['model_state_dict']['entity_embedding0'].size(0)
+            nrelation_old = checkpoint['model_state_dict']['relation_embedding0'].size(0)
+        else:
+            old_dim = checkpoint['model_state_dict']['relation_embedding'].size(1)# if it want to double the dim for rotatE the base dim will based on relation
+            old_entity_dim = checkpoint['model_state_dict']['entity_embedding'].size(1)
+            nentity_old = checkpoint['model_state_dict']['entity_embedding'].size(0)
+            nrelation_old = checkpoint['model_state_dict']['relation_embedding'].size(0)
+  
         #if checkpoint['model_state_dict'] != args.model:
         #    print('loaded model is different from current model')
         kge_model_old = KGEModel(
