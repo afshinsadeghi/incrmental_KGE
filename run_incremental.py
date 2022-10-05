@@ -594,10 +594,6 @@ def main(args):
 
             for step in range(init_step, args.max_steps):
 
-                log = kge_model.train_step(kge_model, optimizer, train_iterator, args)
-
-                training_logs.append(log)
-
                 if step >= warm_up_steps:
                     current_learning_rate = current_learning_rate / 10
                     logging.info('Change learning_rate to %f at step %d' % (current_learning_rate, step))
@@ -613,6 +609,10 @@ def main(args):
                             lr=current_learning_rate
                         )
                     warm_up_steps = warm_up_steps * 3
+                
+                log = kge_model.train_step(kge_model, optimizer, train_iterator, args)
+
+                training_logs.append(log)
 
                 if step % args.save_checkpoint_steps == 0:
                     save_variable_list = {
