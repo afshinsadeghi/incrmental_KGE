@@ -1,0 +1,6 @@
+10	_derivationally_related_form	6
+11	_member_of_domain_region	2
+12	_derivationally_related_form	3
+4	_derivationally_related_form	12
+5	_derivationally_related_form	12
+12	_derivationally_related_form	4

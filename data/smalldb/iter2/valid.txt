@@ -1,0 +1,6 @@
+1	_hypernym	3
+2	_hypernym	4
+3	_hypernym	6
+4	_derivationally_related_form	4
+10	_derivationally_related_form	2
+11	_derivationally_related_form	2

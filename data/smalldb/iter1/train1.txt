@@ -1,0 +1,14 @@
+0	_derivationally_related_form	1
+1	_derivationally_related_form	2
+3	_hypernym	4
+5	_has_part	3
+6	_derivationally_related_form	4
+4	_hypernym	1
+1	_derivationally_related_form	7
+1	_hypernym	8
+2	_hypernym	8
+9	_derivationally_related_form	8
+8	_derivationally_related_form	10
+2	_hypernym	10
+4	_hypernym	10
+10	_hypernym	0
