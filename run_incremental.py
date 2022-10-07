@@ -633,7 +633,7 @@ def main(args):
                     }
                     save_model(kge_model, optimizer, save_variable_list, args)
 
-                if step % args.log_steps == 0:
+                if len(training_logs)> 0 and step % args.log_steps == 0:
                     metrics = {}
                     for metric in training_logs[0].keys():
                         metrics[metric] = sum([log[metric] for log in training_logs]) / len(training_logs)
@@ -679,8 +679,7 @@ def main(args):
                         }
                         save_model(kge_model, optimizer, save_variable_list, args)
                 
-
-                    if step % args.log_steps == 0:
+                    if len(training_logs)> 0 and  step % args.log_steps == 0:
                         metrics = {}
                         for metric in training_logs[0].keys():
                             metrics[metric] = sum([log[metric] for log in training_logs]) / len(training_logs)
