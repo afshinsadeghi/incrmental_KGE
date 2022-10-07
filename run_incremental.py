@@ -432,25 +432,25 @@ def main(args):
             #train_triples_0_index = strategy_stage_set_selection[0]
             #train_triples_1_index = strategy_stage_set_selection[1]
             #train_triples_2_index = strategy_stage_set_selection[2]
-            
-            train_dataloader_head0 = DataLoader(
-                TrainDataset(train_triples_0, nentity, nrelation, args.negative_sample_size, 'head-batch'),
-                batch_size=args.batch_size,
-                shuffle=True,
-                num_workers=max(1, args.cpu_num // 2),
-                collate_fn=TrainDataset.collate_fn
-            )
+            if (len(train_triples_1)> 0):
+                train_dataloader_head0 = DataLoader(
+                    TrainDataset(train_triples_0, nentity, nrelation, args.negative_sample_size, 'head-batch'),
+                    batch_size=args.batch_size,
+                    shuffle=True,
+                    num_workers=max(1, args.cpu_num // 2),
+                    collate_fn=TrainDataset.collate_fn
+                )
 
-            train_dataloader_tail0 = DataLoader(
-                TrainDataset(train_triples_0, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
-                batch_size=args.batch_size,
-                shuffle=True,
-                num_workers=max(1, args.cpu_num // 2),
-                collate_fn=TrainDataset.collate_fn
-            )
-            train_iterator0 = BidirectionalOneShotIterator(train_dataloader_head0, train_dataloader_tail0)
-            #train_iterator_set.append(train_iterator0)
-            train_iterator_set[0] =train_iterator0
+                train_dataloader_tail0 = DataLoader(
+                    TrainDataset(train_triples_0, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
+                    batch_size=args.batch_size,
+                    shuffle=True,
+                    num_workers=max(1, args.cpu_num // 2),
+                    collate_fn=TrainDataset.collate_fn
+                )
+                train_iterator0 = BidirectionalOneShotIterator(train_dataloader_head0, train_dataloader_tail0)
+                #train_iterator_set.append(train_iterator0)
+                train_iterator_set[0] =train_iterator0
             if (len(train_triples_1)> 0):
                 train_dataloader_head1 = DataLoader(
                     TrainDataset(train_triples_1, nentity, nrelation, args.negative_sample_size, 'head-batch'),
