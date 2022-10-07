@@ -432,7 +432,7 @@ def main(args):
             #train_triples_0_index = strategy_stage_set_selection[0]
             #train_triples_1_index = strategy_stage_set_selection[1]
             #train_triples_2_index = strategy_stage_set_selection[2]
-            if (len(train_triples_1)> 0):
+            if (len(train_triples_0)> 0):
                 train_dataloader_head0 = DataLoader(
                     TrainDataset(train_triples_0, nentity, nrelation, args.negative_sample_size, 'head-batch'),
                     batch_size=args.batch_size,
